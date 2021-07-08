@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - preConditions:
+      - dbms:
+          type: postgresql
+  - changeSet:
+      id: v1.0/create_tables_07072021-1643
+      author: wiselder
+      comment: create functions
+      changes:
+        - sqlFile:
+            path: v1.0/create_tables_07072021-1643.sql
+            relativeToChangelogFile: true
+            splitStatements: false

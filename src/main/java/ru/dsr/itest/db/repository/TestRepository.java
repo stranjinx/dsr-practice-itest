@@ -1,7 +1,9 @@
 package ru.dsr.itest.db.repository;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.dsr.itest.db.entity.Test;
 import ru.dsr.itest.rest.response.CreatedTest;
 
@@ -16,10 +18,13 @@ public interface TestRepository extends CrudRepository<Test, Integer> {
 
     @Query(value = "SELECT id, title, discipline FROM test WHERE creator = ?1", nativeQuery = true)
     List<CreatedTest> findMainByCreatorId(Integer id);
+
     Optional<Test> findTestByIdAndCreator(Integer id, Integer creator);
 
-    @Query(value = "UPDATE test SET time_start = ?3, time_end = ?4 WHERE creator = ?1 AND id = ?2", nativeQuery = true)
-    boolean startTest(Integer creatorId, Integer id, Timestamp from, Timestamp to);
+    @Transactional
+    @Modifying
+    @Query("UPDATE Test SET timeStart = ?3, timeEnd = ?4 WHERE creator = ?1 AND id = ?2")
+    int startTest(Integer creatorId, Integer id, Timestamp from, Timestamp to);
 
-    boolean deleteByIdAndCreator(Integer id, Integer creator);
+    int deleteByIdAndCreator(Integer id, Integer creator);
 }

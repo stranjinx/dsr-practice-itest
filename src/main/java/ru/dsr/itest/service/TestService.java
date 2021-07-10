@@ -41,15 +41,15 @@ public class TestService {
     }
 
     public void startTest(Integer creator, Integer id, TestDuration duration) {
-        boolean updated = repository.startTest(creator, id, duration.getTimeStart(), duration.getTimeEnd());
-        if (!updated) {
+        int updated = repository.startTest(creator, id, duration.getTimeStart(), duration.getTimeEnd());
+        if (updated < 1) {
             throw new EntityNotFoundException();
         }
     }
 
     public void deleteTest(Integer creator, Integer id) {
-        boolean deleted = repository.deleteByIdAndCreator(id, creator);
-        if (!deleted) {
+        int deleted = repository.deleteByIdAndCreator(id, creator);
+        if (deleted < 1) {
             throw new EntityNotFoundException();
         }
     }

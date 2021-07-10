@@ -62,7 +62,7 @@ public class TestController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
-    public void start(@AuthenticationPrincipal AccountDetails details,
+    public void delete(@AuthenticationPrincipal AccountDetails details,
                       @PathVariable Integer id) {
         testService.deleteTest(details.getId(), id);
     }

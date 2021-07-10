@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS discipline (
 );
 INSERT INTO discipline (id, title) VALUES (0, 'JAVA') ON CONFLICT DO NOTHING;
 INSERT INTO discipline (id, title) VALUES (1, 'CSHARP') ON CONFLICT DO NOTHING;
+INSERT INTO discipline (id, title) VALUES (2, 'CPP') ON CONFLICT DO NOTHING;
 INSERT INTO discipline (id, title) VALUES (3, 'PYTHON') ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS account (
     id SERIAL PRIMARY KEY,
@@ -24,12 +25,11 @@ CREATE TABLE IF NOT EXISTS student (
 );
 CREATE TABLE IF NOT EXISTS test (
     id SERIAL PRIMARY KEY,
-    discipline_id INT NOT NULL REFERENCES discipline(id) ON DELETE CASCADE,
-    creator_id INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    discipline INT NOT NULL REFERENCES discipline(id) ON DELETE CASCADE,
+    creator INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     title VARCHAR(256) NOT NULL DEFAULT 'New test',
     time_start TIMESTAMP,
-    time_end TIMESTAMP,
-    duration INT
+    time_end TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS question (
     id SERIAL PRIMARY KEY,

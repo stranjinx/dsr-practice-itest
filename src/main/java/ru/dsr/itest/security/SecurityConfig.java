@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.dsr.itest.db.entity.Role;
 import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.security.jwt.JwtFilter;
 
@@ -33,6 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(STATELESS)
                 .and().authorizeRequests()
+                .antMatchers(Api.V1 + "/test/*").hasRole(Role.CREATOR.toString())
                 .antMatchers(Api.V1 + "/auth/*").permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(authEntryPoint)

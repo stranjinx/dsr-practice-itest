@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Getter
-@Duration
+@Duration(target = Duration.Target.FUTURE)
 public class TestDuration {
     @NotNull
     private Timestamp timeStart;

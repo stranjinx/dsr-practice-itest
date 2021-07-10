@@ -26,5 +26,6 @@ public interface TestRepository extends CrudRepository<Test, Integer> {
     @Query("UPDATE Test SET timeStart = ?3, timeEnd = ?4 WHERE creator = ?1 AND id = ?2")
     int startTest(Integer creatorId, Integer id, Timestamp from, Timestamp to);
 
+    @Transactional
     int deleteByIdAndCreator(Integer id, Integer creator);
 }

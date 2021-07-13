@@ -27,30 +27,37 @@ CREATE TABLE IF NOT EXISTS test (
     id SERIAL PRIMARY KEY,
     discipline INT NOT NULL REFERENCES discipline(id) ON DELETE CASCADE,
     creator INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-    title VARCHAR(256) NOT NULL DEFAULT 'New test',
-    time_start TIMESTAMP,
-    time_end TIMESTAMP
+    title VARCHAR(256) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS test_history (
+    id SERIAL PRIMARY KEY,
+    test_id INT REFERENCES test(id) ON DELETE CASCADE,
+    time_start TIMESTAMP NOT NULL,
+    time_end TIMESTAMP CHECK (time_end IS NULL OR time_end > time_start)
 );
 CREATE TABLE IF NOT EXISTS question (
     id SERIAL PRIMARY KEY,
     test_id INT NOT NULL REFERENCES test(id) ON DELETE CASCADE,
-    title VARCHAR(2048) NOT NULL DEFAULT 'New question',
+    title VARCHAR(2048) NOT NULL,
     weight INT NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS choice (
     id SERIAL PRIMARY KEY,
     question_id INT NOT NULL REFERENCES question(id) ON DELETE CASCADE,
-    title VARCHAR(256) NOT NULL DEFAULT 'New choice',
+    number INT NOT NULL,
+    title VARCHAR(256) NOT NULL,
     correct BOOLEAN DEFAULT FALSE
 );
 CREATE TABLE IF NOT EXISTS variant (
     id SERIAL PRIMARY KEY,
-    test_id INT NOT NULL REFERENCES test(id) ON DELETE CASCADE
+    test_id INT NOT NULL REFERENCES test(id) ON DELETE CASCADE,
+    number INT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS variant_config (
-    variant_id INT REFERENCES variant(id) ON DELETE CASCADE,
-    question_id INT REFERENCES question(id) ON DELETE CASCADE,
-    PRIMARY KEY (variant_id, question_id)
+    variant INT REFERENCES variant(id) ON DELETE CASCADE,
+    question INT REFERENCES question(id) ON DELETE CASCADE,
+    number INT NOT NULL,
+    PRIMARY KEY (variant, question)
 );
 CREATE TABLE IF NOT EXISTS response (
     id SERIAL PRIMARY KEY,

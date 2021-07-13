@@ -2,55 +2,60 @@ package ru.dsr.itest.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.dsr.itest.db.entity.Discipline;
+import org.springframework.transaction.annotation.Transactional;
 import ru.dsr.itest.db.entity.Test;
+import ru.dsr.itest.db.repository.TestHistoryRepository;
 import ru.dsr.itest.db.repository.TestRepository;
-import ru.dsr.itest.rest.exception.EntityNotFoundException;
-import ru.dsr.itest.rest.request.TestDuration;
-import ru.dsr.itest.rest.request.UpdateTest;
-import ru.dsr.itest.rest.response.CreatedTest;
+import ru.dsr.itest.rest.dto.TestCreateDto;
+import ru.dsr.itest.rest.dto.TestEditDto;
+import ru.dsr.itest.rest.dto.TestHistoryDto;
+import ru.dsr.itest.rest.response.TestView;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TestService {
-    private final TestRepository repository;
+    private final TestRepository testRepository;
+    private final TestHistoryRepository historyRepository;
+    private final ActionValidator actionValidator;
 
-    public CreatedTest createTest(Integer creator, Discipline discipline) {
-        return repository.create(creator, discipline.ordinal());
+    public Test createTest(Integer creator, TestCreateDto testData) {
+        Test test = testData.toTest();
+        test.setCreator(creator);
+        return testRepository.save(test);
     }
 
-    public List<CreatedTest> findMain(Integer id) {
-        return repository.findMainByCreatorId(id);
+    public List<TestView> findAll(Integer id) {
+        return testRepository.findAllByCreatorId(id);
     }
 
     public Test findTest(Integer creator, Integer id) {
-        return repository.findTestByIdAndCreator(id, creator)
-                .orElseThrow(EntityNotFoundException::new);
+        return actionValidator.validateAndGetTest(creator, testRepository.findById(id));
     }
 
-    public void updateTest(Integer creator, Integer id, UpdateTest updateData) {
+    public void updateTestSettings(Integer creator, Integer id, TestEditDto testDto) {
         Test test = findTest(creator, id);
-        putChanges(test, updateData);
-        repository.save(test);
+        test.setTitle(testDto.getTitle());
+        testRepository.save(test);
     }
 
-    private void putChanges(Test test, UpdateTest updateData) {
-        test.setTitle(updateData.getTitle());
+    @Transactional
+    public void start(Integer creator, Integer id, TestHistoryDto duration) {
+        actionValidator.validateStartTest(creator, id);
+        historyRepository.saveDuration(id, duration.getTimeStart(), duration.getTimeEnd());
     }
 
-    public void startTest(Integer creator, Integer id, TestDuration duration) {
-        int updated = repository.startTest(creator, id, duration.getTimeStart(), duration.getTimeEnd());
-        if (updated < 1) {
-            throw new EntityNotFoundException();
-        }
+    @Transactional
+    public void stop(Integer creator, Integer id) {
+        actionValidator.validateStopTest(creator, id);
+        historyRepository.saveDurationTimeEnd(id, Timestamp.from(Instant.now()));
     }
 
     public void deleteTest(Integer creator, Integer id) {
-        int deleted = repository.deleteByIdAndCreator(id, creator);
-        if (deleted < 1) {
-            throw new EntityNotFoundException();
-        }
+        actionValidator.validateDeleteTest(creator, id);
+        testRepository.deleteById(id);
     }
 }

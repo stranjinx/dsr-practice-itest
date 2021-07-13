@@ -1,4 +1,4 @@
-package ru.dsr.itest.rest.request;
+package ru.dsr.itest.rest.dto;
 
 import lombok.Getter;
 import ru.dsr.itest.rest.validation.Duration;
@@ -8,9 +8,8 @@ import java.sql.Timestamp;
 
 @Getter
 @Duration(target = Duration.Target.FUTURE)
-public class TestDuration {
+public class TestHistoryDto {
     @NotNull
     private Timestamp timeStart;
-    @NotNull
     private Timestamp timeEnd;
 }

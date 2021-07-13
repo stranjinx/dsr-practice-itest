@@ -1,12 +1,11 @@
 package ru.dsr.itest.rest.validation;
 
-import org.hibernate.validator.internal.constraintvalidators.bv.size.SizeValidatorForArray;
-import ru.dsr.itest.rest.request.TestDuration;
+import ru.dsr.itest.rest.dto.TestHistoryDto;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class DurationValidator implements ConstraintValidator<Duration, TestDuration> {
+public class DurationValidator implements ConstraintValidator<Duration, TestHistoryDto> {
     private Duration.Target target;
 
     @Override
@@ -14,7 +13,7 @@ public class DurationValidator implements ConstraintValidator<Duration, TestDura
         this.target = duration.target();
     }
     @Override
-    public boolean isValid(TestDuration value, ConstraintValidatorContext context) {
+    public boolean isValid(TestHistoryDto value, ConstraintValidatorContext context) {
         return target.isValid(value.getTimeStart(), value.getTimeEnd());
     }
 }

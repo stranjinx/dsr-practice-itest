@@ -2,6 +2,7 @@ package ru.dsr.itest.rest.validation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import javax.validation.constraints.Size;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,11 +13,11 @@ import java.time.Instant;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = DurationValidator.class)
-public @interface Duration {
-    String message() default "";
+public @interface Duration {@Size
     Target target() default Target.ANY;
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
+    String message() default "";
+    Class<?>[] groups() default { };
+    Class<? extends Payload>[] payload() default { };
 
     enum Target{
         FUTURE {
@@ -32,7 +33,7 @@ public @interface Duration {
         }, ANY;
 
         public  boolean isValid(Timestamp from, Timestamp to) {
-            return from.before(to);
+            return to == null || from.before(to);
         }
     }
 }

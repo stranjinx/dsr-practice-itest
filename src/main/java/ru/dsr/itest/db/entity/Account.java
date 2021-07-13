@@ -4,9 +4,12 @@ import lombok.Getter;
 
 import javax.persistence.*;
 
+import static javax.persistence.GenerationType.*;
+
 @Entity @Getter
 public class Account {
     @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Integer id;
     private String email;
     private String password;

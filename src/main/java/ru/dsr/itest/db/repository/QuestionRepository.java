@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface QuestionRepository extends CrudRepository<Question, Integer> {
-    @Query(value = "SELECT q.id, q.title, q.weight FROM question q, test t WHERE q.test_id = :testId AND t.id = :testId",
+    @Query(value = "SELECT q.id, q.title, q.weight FROM question q WHERE q.test_id = :testId",
             nativeQuery = true)
     List<QuestionView> findAllByTestId(Integer testId);
 

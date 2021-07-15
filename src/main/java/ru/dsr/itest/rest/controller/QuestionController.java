@@ -3,7 +3,6 @@ package ru.dsr.itest.rest.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.rest.dto.*;
 import ru.dsr.itest.rest.response.QuestionView;
@@ -22,11 +21,11 @@ import static org.springframework.http.HttpStatus.OK;
 public class QuestionController {
     private final QuestionService questionService;
 
-    @PostMapping
+    @PutMapping
     @ResponseStatus(OK)
-    public void pushSettings(@AuthenticationPrincipal AccountDetails details,
-                             @RequestBody @Valid QuestionDto settings) {
-        questionService.pushQuestionSettings(details.getId(), settings);
+    public void updateQuestion(@AuthenticationPrincipal AccountDetails details,
+                               @RequestBody @Valid QuestionDto settings) {
+        questionService.updateQuestionSettings(details.getId(), settings);
     }
 
     @GetMapping("/all/{testId}")

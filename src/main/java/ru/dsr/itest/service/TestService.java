@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.dsr.itest.db.entity.Test;
-import ru.dsr.itest.db.repository.TestHistoryRepository;
 import ru.dsr.itest.db.repository.TestRepository;
 import ru.dsr.itest.rest.dto.TestCreateDto;
 import ru.dsr.itest.rest.dto.TestEditDto;
@@ -19,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestService {
     private final TestRepository testRepository;
-    private final TestHistoryRepository historyRepository;
     private final ActionValidator actionValidator;
 
     public Test createTest(Integer creator, TestCreateDto testData) {
@@ -45,13 +43,13 @@ public class TestService {
     @Transactional
     public void start(Integer creator, Integer id, TestHistoryDto duration) {
         actionValidator.validateStartTest(creator, id);
-        historyRepository.saveDuration(id, duration.getTimeStart(), duration.getTimeEnd());
+        testRepository.saveDuration(id, duration.getTimeStart(), duration.getTimeEnd());
     }
 
     @Transactional
     public void stop(Integer creator, Integer id) {
         actionValidator.validateStopTest(creator, id);
-        historyRepository.saveDurationTimeEnd(id, Timestamp.from(Instant.now()));
+        testRepository.saveDurationTimeEnd(id, Timestamp.from(Instant.now()));
     }
 
     public void deleteTest(Integer creator, Integer id) {

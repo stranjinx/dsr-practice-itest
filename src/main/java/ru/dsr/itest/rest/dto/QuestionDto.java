@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
-public class QuestionDto implements QuestionView {
+public class QuestionDto {
     @NotNull
     private Integer id;
     @NotNull

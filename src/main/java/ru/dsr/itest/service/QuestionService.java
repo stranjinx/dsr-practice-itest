@@ -44,7 +44,7 @@ public class QuestionService {
     }
 
     @Transactional
-    public void pushQuestionSettings(Integer creator, QuestionDto settings) {
+    public void updateQuestionSettings(Integer creator, QuestionDto settings) {
         actionValidator.validateUpdateTest(creator, settings.getTestId());
 
         Question question = settings.getId() == -1 ?
@@ -58,16 +58,16 @@ public class QuestionService {
 
         questionRepository.save(question);
 
-        pushChanges(
+        updateChoices(
                 question.getId(),
                 question.getChoices().stream().collect(Collectors.toMap(Choice::getId, c -> c)),
                 settings.getChoices()
         );
     }
 
-    private void pushChanges(Integer questionId,
-                             Map<Integer, Choice> currentChoicesById,
-                             Map<Integer, ChoiceDto> choiceDtoByNumber) {
+    private void updateChoices(Integer questionId,
+                               Map<Integer, Choice> currentChoicesById,
+                               Map<Integer, ChoiceDto> choiceDtoByNumber) {
         List<Choice> updated = new ArrayList<>();
         int incorrectCount = 0;
         for (Map.Entry<Integer, ChoiceDto> o : choiceDtoByNumber.entrySet()) {

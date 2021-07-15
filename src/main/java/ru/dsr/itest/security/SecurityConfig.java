@@ -36,6 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().authorizeRequests()
                 .antMatchers(Api.V1 + "/edit/**").hasRole(Role.CREATOR.toString())
                 .antMatchers(Api.V1 + "/student/**").hasRole(Role.STUDENT.toString())
+                .antMatchers(Api.V1 + "/exam/**").authenticated()
+                .antMatchers(Api.V1 + "/rating/**").authenticated()
                 .antMatchers(Api.V1 + "/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(authEntryPoint)

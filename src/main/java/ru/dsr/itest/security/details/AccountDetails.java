@@ -3,6 +3,7 @@ package ru.dsr.itest.security.details;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import ru.dsr.itest.rest.dto.TestExamDto;
 
 import java.util.Collection;
 
@@ -55,4 +56,5 @@ public class AccountDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

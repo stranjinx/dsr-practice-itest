@@ -4,14 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import ru.dsr.itest.db.entity.Test;
-import ru.dsr.itest.db.entity.TestHistory;
-import ru.dsr.itest.db.repository.TestHistoryRepository;
 import ru.dsr.itest.db.repository.TestRepository;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.*;
@@ -65,25 +61,19 @@ public class ActionValidator {
             throw new ResponseStatusException(NOT_FOUND);
         if (!test.get().getCreator().equals(account))
             throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
-        if (!test.get().getHistory().isEmpty())
+        if (test.get().getTimeStart() != null)
             throw new ResponseStatusException(FORBIDDEN,"FINAL STATE");
     }
 
     public void validateStartTest(Integer account, Integer testId) {
         Test test = validateExistingAndPermission(account, testId);
-        List<TestHistory> th = test.getHistory();
-        if (th.isEmpty()) return;
-        TestHistory history = th.get(th.size() - 1);
-        if (history.getTimeEnd() == null || history.getTimeEnd().after(Date.from(Instant.now())))
+        if (test.getTimeEnd() == null || test.getTimeEnd().after(Date.from(Instant.now())))
             throw new ResponseStatusException(FORBIDDEN, "ALREADY STARTED");
     }
 
     public void validateStopTest(Integer account, Integer testId) {
         Test test = validateExistingAndPermission(account, testId);
-        List<TestHistory> th = test.getHistory();
-        if (th.isEmpty()) return;
-        TestHistory history = th.get(th.size() - 1);
-        if (history.getTimeEnd() == null || history.getTimeEnd().after(Date.from(Instant.now())))
+        if (test.getTimeEnd() == null || test.getTimeEnd().after(Date.from(Instant.now())))
             throw new ResponseStatusException(NOT_FOUND);
     }
 

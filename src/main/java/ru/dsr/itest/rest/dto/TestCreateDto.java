@@ -9,9 +9,12 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
-public class TestCreateDto extends TestEditDto {
+public class TestCreateDto {
     @NotNull
     private Discipline discipline;
+    @NotBlank
+    @Size(max = 256)
+    private String title;
 
     public Test toTest() {
         Test test = new Test();

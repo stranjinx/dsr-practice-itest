@@ -27,12 +27,8 @@ CREATE TABLE IF NOT EXISTS test (
     id SERIAL PRIMARY KEY,
     discipline INT NOT NULL REFERENCES discipline(id) ON DELETE CASCADE,
     creator INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-    title VARCHAR(256) NOT NULL
-);
-CREATE TABLE IF NOT EXISTS test_history (
-    id SERIAL PRIMARY KEY,
-    test_id INT REFERENCES test(id) ON DELETE CASCADE,
-    time_start TIMESTAMP NOT NULL,
+    title VARCHAR(256) NOT NULL,
+    time_start TIMESTAMP,
     time_end TIMESTAMP CHECK (time_end IS NULL OR time_end > time_start)
 );
 CREATE TABLE IF NOT EXISTS question (

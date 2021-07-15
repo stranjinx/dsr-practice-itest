@@ -23,7 +23,6 @@ public class Test {
     private Discipline discipline;
     private Integer creator;
     private String title;
-
-    @OneToMany(mappedBy = "testId", fetch = LAZY)
-    private List<TestHistory> history = new ArrayList<>();
+    private Timestamp timeStart;
+    private Timestamp timeEnd;
 }

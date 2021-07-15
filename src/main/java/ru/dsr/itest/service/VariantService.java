@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.dsr.itest.db.entity.Choice;
 import ru.dsr.itest.db.entity.ConfigId;
 import ru.dsr.itest.db.entity.Variant;
 import ru.dsr.itest.db.entity.VariantConfig;
 import ru.dsr.itest.db.repository.QuestionRepository;
 import ru.dsr.itest.db.repository.VariantConfigRepository;
 import ru.dsr.itest.db.repository.VariantRepository;
-import ru.dsr.itest.rest.dto.ChoiceDto;
 import ru.dsr.itest.rest.dto.VariantDto;
 
 import java.util.*;
@@ -33,7 +31,7 @@ public class VariantService {
     }
 
     @Transactional
-    public void pushVariantSettings(Integer creator, VariantDto settings) {
+    public void updateVariantSettings(Integer creator, VariantDto settings) {
         actionValidator.validateUpdateTest(creator, settings.getTestId());
         checkCollisionAndExisting(settings);
 
@@ -45,7 +43,7 @@ public class VariantService {
         variant.setTestId(settings.getTestId());
         variant.setNumber(settings.getNumber());
         variantRepository.save(variant);
-        pushChanges(variant.getId(), settings.getQuestions());
+        updateVariantQuestions(variant.getId(), settings.getQuestions());
     }
 
     private void checkCollisionAndExisting(VariantDto settings) {
@@ -66,7 +64,7 @@ public class VariantService {
             throw new ResponseStatusException(BAD_REQUEST);
     }
 
-    private void pushChanges(Integer variant, Map<Integer, Integer> questionsByNumber) {
+    private void updateVariantQuestions(Integer variant, Map<Integer, Integer> questionsByNumber) {
         List<VariantConfig> configs = new ArrayList<>();
 
         for (Map.Entry<Integer, Integer> e : questionsByNumber.entrySet()) {

@@ -1,14 +1,12 @@
 package ru.dsr.itest.rest.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.dsr.itest.db.entity.Student;
 import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.rest.dto.StudentDto;
 import ru.dsr.itest.security.details.AccountDetails;
-import ru.dsr.itest.service.AccountService;
 import ru.dsr.itest.service.StudentService;
 
 import javax.validation.Valid;
@@ -19,7 +17,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping(Api.V1 + "/student")
 @RequiredArgsConstructor
 public class StudentController {
-    private StudentService accountService;
+    private final StudentService accountService;
 
     @PostMapping
     @ResponseStatus(OK)

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.dsr.itest.db.entity.Account;
 import ru.dsr.itest.db.repository.AccountRepository;
+import ru.dsr.itest.rest.dto.StudentDto;
 
 import java.util.Optional;
 
@@ -15,4 +16,5 @@ public class AccountService {
     public Optional<Account> findByEmail(String email) {
         return accountRepository.findAccountByEmail(email);
     }
+
 }

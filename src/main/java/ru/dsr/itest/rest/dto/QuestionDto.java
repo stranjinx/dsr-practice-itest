@@ -27,8 +27,6 @@ public class QuestionDto implements QuestionView {
     @Size(min = 2, max = 10)
     private Map<Integer, ChoiceDto> choices;
 
-    private List<Integer> deletedChoices = new ArrayList<>();
-
     public static QuestionDto from(Question quest, boolean choices) {
         QuestionDto s = new QuestionDto();
 

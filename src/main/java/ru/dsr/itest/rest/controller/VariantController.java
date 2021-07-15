@@ -1,9 +1,11 @@
 package ru.dsr.itest.rest.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import ru.dsr.itest.db.entity.Variant;
 import ru.dsr.itest.db.entity.VariantConfig;
 import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.rest.dto.VariantDto;
@@ -37,9 +39,9 @@ public class VariantController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public List<VariantConfig> getVariant(@AuthenticationPrincipal AccountDetails details,
-                                          @PathVariable Integer id) {
-        return service.findVariant(details.getId(), id);
+    public VariantDto getVariant(@AuthenticationPrincipal AccountDetails details,
+                              @PathVariable Integer id) {
+        return VariantDto.from(service.findVariant(details.getId(), id));
     }
 
     @DeleteMapping("/{id}")

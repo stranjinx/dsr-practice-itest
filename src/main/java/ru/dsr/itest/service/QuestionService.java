@@ -43,6 +43,7 @@ public class QuestionService {
         return questionRepository.findAllByTestId(test);
     }
 
+    @Transactional
     public void pushQuestionSettings(Integer creator, QuestionDto settings) {
         actionValidator.validateUpdateTest(creator, settings.getTestId());
 
@@ -55,50 +56,44 @@ public class QuestionService {
         question.setTestId(settings.getTestId());
         question.setWeight(settings.getWeight());
 
-        List<Choice> choices = new ArrayList<>(question.getChoices());
-        pushChanges(question.getId(), choices, settings.getChoices(), settings.getDeletedChoices());
-
         questionRepository.save(question);
-        choiceRepository.saveAll(choices);
-        choiceRepository.deleteAllById(settings.getDeletedChoices());
+
+        pushChanges(
+                question.getId(),
+                question.getChoices().stream().collect(Collectors.toMap(Choice::getId, c -> c)),
+                settings.getChoices()
+        );
     }
 
     private void pushChanges(Integer questionId,
-                             List<Choice> target,
-                             Map<Integer, ChoiceDto> toUpdate,
-                             List<Integer> toDelete) {
-        Map<Integer, Choice> targetMap = target.stream().collect(Collectors.toMap(Choice::getId, c -> c));
-        target.clear();
-
+                             Map<Integer, Choice> currentChoicesById,
+                             Map<Integer, ChoiceDto> choiceDtoByNumber) {
+        List<Choice> updated = new ArrayList<>();
         int incorrectCount = 0;
-        for (Map.Entry<Integer, ChoiceDto> o : toUpdate.entrySet()) {
-            ChoiceDto choiceDataToUpdate = o.getValue();
+        for (Map.Entry<Integer, ChoiceDto> o : choiceDtoByNumber.entrySet()) {
+            ChoiceDto choiceSettings = o.getValue();
 
-            if (toDelete.contains(choiceDataToUpdate.getId()))
-                throw new ResponseStatusException(BAD_REQUEST);
-
-            if (!choiceDataToUpdate.isCorrect())
+            if (!choiceSettings.isCorrect())
                 ++incorrectCount;
 
-            int choiceId = choiceDataToUpdate.getId();
-            Choice choiceToUpdate;
+            int choiceId = choiceSettings.getId();
+            Choice choice;
+            if (choiceId == -1)
+                choice = new Choice();
+            else if ((choice = currentChoicesById.remove(choiceId)) == null)
+                throw new ResponseStatusException(NOT_FOUND);
 
-            if (choiceId == -1) {
-                choiceToUpdate = new Choice();
-            } else {
-                choiceToUpdate = targetMap.get(choiceId);
-                if (choiceToUpdate == null)
-                    throw new ResponseStatusException(NOT_FOUND);
-            }
-
-            choiceToUpdate.setQuestionId(questionId);
-            choiceToUpdate.setNumber(o.getKey());
-            choiceToUpdate.setCorrect(choiceDataToUpdate.isCorrect());
-            choiceToUpdate.setTitle(choiceDataToUpdate.getTitle());
-            target.add(choiceToUpdate);
+            choice.setQuestionId(questionId);
+            choice.setNumber(o.getKey());
+            choice.setCorrect(choiceSettings.isCorrect());
+            choice.setTitle(choiceSettings.getTitle());
+            updated.add(choice);
         }
 
-        if (incorrectCount == toUpdate.size())
+        if (incorrectCount == updated.size())
             throw new ResponseStatusException(BAD_REQUEST);
+
+        choiceRepository.deleteAll(currentChoicesById.values());
+        choiceRepository.saveAll(updated);
     }
 }

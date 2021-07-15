@@ -4,9 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import ru.dsr.itest.db.entity.Test;
+import ru.dsr.itest.db.entity.TestHistory;
 import ru.dsr.itest.db.repository.TestHistoryRepository;
 import ru.dsr.itest.db.repository.TestRepository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.*;
@@ -15,7 +20,6 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class ActionValidator {
     private final TestRepository testRepository;
-    private final TestHistoryRepository historyRepository;
 
     //GET ACTION
     public void validateGetVariant(Integer creator, Integer variant) {
@@ -61,24 +65,30 @@ public class ActionValidator {
             throw new ResponseStatusException(NOT_FOUND);
         if (!test.get().getCreator().equals(account))
             throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
-        if (historyRepository.existsByTestId(test.get().getId()))
+        if (!test.get().getHistory().isEmpty())
             throw new ResponseStatusException(FORBIDDEN,"FINAL STATE");
     }
 
     public void validateStartTest(Integer account, Integer testId) {
-        validateExistingAndPermission(account, testId);
-        if (historyRepository.existsStartedByTestId(testId))
+        Test test = validateExistingAndPermission(account, testId);
+        List<TestHistory> th = test.getHistory();
+        if (th.isEmpty()) return;
+        TestHistory history = th.get(th.size() - 1);
+        if (history.getTimeEnd() == null || history.getTimeEnd().after(Date.from(Instant.now())))
             throw new ResponseStatusException(FORBIDDEN, "ALREADY STARTED");
     }
 
     public void validateStopTest(Integer account, Integer testId) {
-        validateExistingAndPermission(account, testId);
-        if (!historyRepository.existsStartedByTestId(testId))
+        Test test = validateExistingAndPermission(account, testId);
+        List<TestHistory> th = test.getHistory();
+        if (th.isEmpty()) return;
+        TestHistory history = th.get(th.size() - 1);
+        if (history.getTimeEnd() == null || history.getTimeEnd().after(Date.from(Instant.now())))
             throw new ResponseStatusException(NOT_FOUND);
     }
 
     //OTHER
-    private void validateExistingAndPermission(Integer account, Integer testId) {
+    private Test validateExistingAndPermission(Integer account, Integer testId) {
         if (testId == null)
             throw new ResponseStatusException(NOT_FOUND);
         Optional<Test> test =  testRepository.findById(testId);
@@ -86,5 +96,6 @@ public class ActionValidator {
             throw new ResponseStatusException(NOT_FOUND);
         if (!test.get().getCreator().equals(account))
             throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
+        return test.get();
     }
 }

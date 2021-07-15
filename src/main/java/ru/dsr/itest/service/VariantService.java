@@ -1,9 +1,11 @@
 package ru.dsr.itest.service;
 
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import ru.dsr.itest.db.entity.ConfigId;
 import ru.dsr.itest.db.entity.Question;
 import ru.dsr.itest.db.entity.Variant;
 import ru.dsr.itest.db.entity.VariantConfig;
@@ -12,6 +14,7 @@ import ru.dsr.itest.db.repository.VariantConfigRepository;
 import ru.dsr.itest.db.repository.VariantRepository;
 import ru.dsr.itest.rest.dto.VariantDto;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,11 +38,7 @@ public class VariantService {
     @Transactional
     public void pushVariantSettings(Integer creator, VariantDto settings) {
         actionValidator.validateUpdateTest(creator, settings.getTestId());
-        if (!questionRepository.existsAllByTestId(
-                settings.getTestId(),
-                settings.getQuestions().values(),
-                settings.getQuestions().size()))
-            throw new ResponseStatusException(BAD_REQUEST);
+        checkExisting(settings);
 
         Variant variant = settings.getId() == -1 ?
                 new Variant() :
@@ -48,38 +47,30 @@ public class VariantService {
 
         variant.setTestId(settings.getTestId());
         variant.setNumber(settings.getNumber());
-
-        List<VariantConfig> target = variantConfigRepository.findAllByConfigId_Variant(variant.getId());
-        pushChanges(variant.getId(), target, settings.getQuestions(), settings.getDeletedQuestions());
         variantRepository.save(variant);
-        for (VariantConfig config : target) {
-            config.getConfigId().setVariant(variant.getId());
-        }
-        variantConfigRepository.saveAll(target);
-        if (settings.getDeletedQuestions().isEmpty())
-            return;
-
-        variantConfigRepository.deleteAllByQuestionsAndVariant(settings.getDeletedQuestions(), variant.getNumber());
+        pushChanges(variant.getId(), settings.getQuestions());
     }
 
-    private void pushChanges(Integer variant,
-                             List<VariantConfig> target,
-                             Map<Integer, Integer> toUpdate,
-                             List<Integer> toDelete) {
-        Map<Integer, VariantConfig> targetMap = target
-                .stream()
-                .collect(Collectors.toMap(VariantConfig::getNumber, vc -> vc));
-        target.clear();
-        for (Map.Entry<Integer, Integer> e : toUpdate.entrySet()) {
-            int number = e.getKey();
-            int questionId = e.getValue();
-            if (toDelete.contains(e.getValue()))
-                throw  new ResponseStatusException(BAD_REQUEST);
-            VariantConfig config = targetMap.computeIfAbsent(number, (n) -> new VariantConfig());
-            config.getConfigId().setQuestion(questionId);
-            config.setNumber(number);
-            target.add(config);
+    private void checkExisting(VariantDto settings) {
+        if (!questionRepository.existsAllByTestId(
+                settings.getTestId(),
+                settings.getQuestions().values(),
+                settings.getQuestions().size()))
+            throw new ResponseStatusException(BAD_REQUEST);
+    }
+
+    private void pushChanges(Integer variant, Map<Integer, Integer> questionsByNumber) {
+        List<VariantConfig> configs = new ArrayList<>();
+
+        for (Map.Entry<Integer, Integer> e : questionsByNumber.entrySet()) {
+            VariantConfig config =  new VariantConfig();
+            config.setNumber(e.getKey());
+            config.setConfigId(new ConfigId(variant, e.getValue()));
+            configs.add(config);
         }
+
+        variantConfigRepository.deleteAllByConfigId_Variant(variant);
+        variantConfigRepository.saveAll(configs);
     }
 
 
@@ -88,8 +79,9 @@ public class VariantService {
         return variantRepository.findAllByTestId(test);
     }
 
-    public List<VariantConfig> findVariant(Integer creator, Integer id) {
+    public Variant findVariant(Integer creator, Integer id) {
         actionValidator.validateGetVariant(creator, id);
-        return variantConfigRepository.findAllByConfigId_Variant(id);
+        return variantRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
     }
 }

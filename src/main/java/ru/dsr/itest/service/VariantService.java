@@ -1,23 +1,20 @@
 package ru.dsr.itest.service;
 
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Var;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import ru.dsr.itest.db.entity.Choice;
 import ru.dsr.itest.db.entity.ConfigId;
-import ru.dsr.itest.db.entity.Question;
 import ru.dsr.itest.db.entity.Variant;
 import ru.dsr.itest.db.entity.VariantConfig;
 import ru.dsr.itest.db.repository.QuestionRepository;
 import ru.dsr.itest.db.repository.VariantConfigRepository;
 import ru.dsr.itest.db.repository.VariantRepository;
+import ru.dsr.itest.rest.dto.ChoiceDto;
 import ru.dsr.itest.rest.dto.VariantDto;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -38,7 +35,7 @@ public class VariantService {
     @Transactional
     public void pushVariantSettings(Integer creator, VariantDto settings) {
         actionValidator.validateUpdateTest(creator, settings.getTestId());
-        checkExisting(settings);
+        checkCollisionAndExisting(settings);
 
         Variant variant = settings.getId() == -1 ?
                 new Variant() :
@@ -51,11 +48,21 @@ public class VariantService {
         pushChanges(variant.getId(), settings.getQuestions());
     }
 
-    private void checkExisting(VariantDto settings) {
+    private void checkCollisionAndExisting(VariantDto settings) {
+        List<Integer> oldQuestions = settings.getQuestions()
+                .values()
+                .stream()
+                .filter(a -> a != -1)
+                .toList();
+        Set<Integer> uniqueQuestions = new HashSet<>(oldQuestions.size());
+        for (Integer id : oldQuestions) {
+            if (!uniqueQuestions.add(id))
+                throw new ResponseStatusException(BAD_REQUEST);
+        }
         if (!questionRepository.existsAllByTestId(
                 settings.getTestId(),
-                settings.getQuestions().values(),
-                settings.getQuestions().size()))
+                uniqueQuestions,
+                uniqueQuestions.size()))
             throw new ResponseStatusException(BAD_REQUEST);
     }
 

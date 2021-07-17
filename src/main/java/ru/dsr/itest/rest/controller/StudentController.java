@@ -19,16 +19,16 @@ import static org.springframework.http.HttpStatus.OK;
 public class StudentController {
     private final StudentService accountService;
 
-    @PostMapping
+    @PutMapping
     @ResponseStatus(OK)
-    public void pushProfile(@AuthenticationPrincipal AccountDetails details,
-                            @RequestBody @Valid StudentDto dto) {
-        accountService.updateProfile(details.getId(), dto);
+    public void updateMainProfile(@AuthenticationPrincipal AccountDetails details,
+                                  @RequestBody @Valid StudentDto dto) {
+        accountService.updateStudentProfile(details.getId(), dto);
     }
 
     @GetMapping
     @ResponseStatus(OK)
     public Student getMainProfile(@AuthenticationPrincipal AccountDetails details) {
-        return accountService.getProfile(details.getId());
+        return accountService.getStudentProfile(details.getId());
     }
 }

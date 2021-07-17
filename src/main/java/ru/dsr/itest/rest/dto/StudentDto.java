@@ -1,8 +1,11 @@
 package ru.dsr.itest.rest.dto;
 
 import lombok.Getter;
+import org.hibernate.validator.constraints.Range;
 import ru.dsr.itest.db.entity.Student;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -19,9 +22,9 @@ public class StudentDto {
     private String faculty;
     @Size(min = 2, max = 256)
     private String direction;
-    @Size(min = 1, max = 7)
+    @Min(1) @Max(7)
     private Integer grade;
-    @Size(min = 1)
+    @Min(1)
     private Integer groupNumber;
 
     public Student toStudent() {

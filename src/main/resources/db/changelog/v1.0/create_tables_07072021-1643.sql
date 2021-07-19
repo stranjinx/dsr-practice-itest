@@ -50,10 +50,10 @@ CREATE TABLE IF NOT EXISTS variant (
     number INT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS variant_config (
-    variant INT REFERENCES variant(id) ON DELETE CASCADE,
-    question INT REFERENCES question(id) ON DELETE CASCADE,
+    variant_id INT REFERENCES variant(id) ON DELETE CASCADE,
+    question_id INT REFERENCES question(id) ON DELETE CASCADE,
     number INT NOT NULL,
-    PRIMARY KEY (variant, question)
+    PRIMARY KEY (variant_id, question_id)
 );
 CREATE TABLE IF NOT EXISTS response (
     id SERIAL PRIMARY KEY,
@@ -61,10 +61,12 @@ CREATE TABLE IF NOT EXISTS response (
     test_id INT NOT NULL REFERENCES test(id) ON DELETE CASCADE,
     variant_id INT NOT NULL REFERENCES variant(id) ON DELETE CASCADE,
     time_start TIMESTAMP NOT NULL DEFAULT NOW(),
-    time_end TIMESTAMP
+    time_end TIMESTAMP,
+    UNIQUE (respondent_id, test_id)
 );
 CREATE TABLE IF NOT EXISTS answer (
     response_id INT NOT NULL REFERENCES response(id) ON DELETE CASCADE,
-    choice_id INT NOT NULL REFERENCES choice(id) ON DELETE CASCADE
+    choice_id INT NOT NULL REFERENCES choice(id) ON DELETE CASCADE,
+    PRIMARY KEY (response_id, choice_id)
 )
 

@@ -1,12 +1,13 @@
 package ru.dsr.itest.db.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 import static javax.persistence.GenerationType.*;
 
-@Entity @Getter
+@Entity @Getter @Setter
 public class Account {
     @Id
     @GeneratedValue(strategy = IDENTITY)

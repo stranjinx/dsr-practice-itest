@@ -1,11 +1,11 @@
 package ru.dsr.itest.rest.validation;
 
-import ru.dsr.itest.rest.dto.TestHistoryDto;
+import ru.dsr.itest.rest.dto.TestDurationDto;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class DurationValidator implements ConstraintValidator<Duration, TestHistoryDto> {
+public class DurationValidator implements ConstraintValidator<Duration, TestDurationDto> {
     private Duration.Target target;
 
     @Override
@@ -13,7 +13,7 @@ public class DurationValidator implements ConstraintValidator<Duration, TestHist
         this.target = duration.target();
     }
     @Override
-    public boolean isValid(TestHistoryDto value, ConstraintValidatorContext context) {
+    public boolean isValid(TestDurationDto value, ConstraintValidatorContext context) {
         return target.isValid(value.getTimeStart(), value.getTimeEnd());
     }
 }

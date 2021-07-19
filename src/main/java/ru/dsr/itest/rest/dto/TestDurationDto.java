@@ -8,8 +8,9 @@ import java.sql.Timestamp;
 
 @Getter
 @Duration(target = Duration.Target.FUTURE)
-public class TestHistoryDto {
+public class TestDurationDto {
     @NotNull
     private Timestamp timeStart;
+    @NotNull
     private Timestamp timeEnd;
 }

@@ -7,7 +7,7 @@ import ru.dsr.itest.db.entity.Test;
 import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.rest.dto.TestCreateDto;
 import ru.dsr.itest.rest.dto.TestEditDto;
-import ru.dsr.itest.rest.dto.TestHistoryDto;
+import ru.dsr.itest.rest.dto.TestDurationDto;
 import ru.dsr.itest.rest.response.TestView;
 import ru.dsr.itest.security.details.AccountDetails;
 import ru.dsr.itest.service.TestService;
@@ -43,7 +43,7 @@ public class TestController {
     @ResponseStatus(OK)
     public void start(@AuthenticationPrincipal AccountDetails details,
                       @PathVariable Integer id,
-                      @RequestBody @Valid TestHistoryDto duration) {
+                      @RequestBody @Valid TestDurationDto duration) {
         testService.start(details.getId(), id, duration);
     }
 

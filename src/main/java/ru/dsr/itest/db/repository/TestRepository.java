@@ -6,7 +6,9 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import ru.dsr.itest.db.entity.Discipline;
 import ru.dsr.itest.db.entity.Test;
-import ru.dsr.itest.rest.dto.TestExamInfoDto;
+import ru.dsr.itest.rest.dto.TestResponseFormDto;
+import ru.dsr.itest.rest.response.RatingView;
+import ru.dsr.itest.rest.response.TestExamInfoView;
 import ru.dsr.itest.rest.response.TestView;
 
 import java.sql.Timestamp;
@@ -15,34 +17,35 @@ import java.util.Optional;
 
 @Repository
 public interface TestRepository extends CrudRepository<Test, Integer> {
-    @Query(value = "SELECT id, title, discipline FROM test WHERE creator = ?1", nativeQuery = true)
-    List<TestView> findAllByCreatorId(Integer id);
+    List<TestView> findAllByCreator(Integer creator);
 
-    @Query(nativeQuery = true,
-            value = "SELECT t.* FROM question q, test t " +
-                    "WHERE q.id = :question AND t.id = q.test_id")
-    Optional<Test> findByQuestionId(Integer question);
+    @Query(value =
+            "SELECT t.id, t.title, t.discipline, t.time_start as timeStart, t.time_end as timeEnd FROM test t WHERE t.discipline = ?1 AND " +
+            "t.time_start < now() AND (t.time_end IS NULL OR now() < t.time_end)",
+            nativeQuery = true)
+    List<TestExamInfoView> findAllAvailableByDiscipline(Integer discipline);
 
-    @Query(nativeQuery = true,
-            value = "SELECT t.* FROM variant v, test t " +
-                    "WHERE v.id = :variant AND t.id = v.test_id")
-    Optional<Test> findByVariantId(Integer variant);
+    @Query(value =
+            "SELECT t.id, t.title, t.discipline, t.time_start as timeStart, t.time_end as timeEnd FROM test t WHERE " +
+            "t.time_start < now() AND (t.time_end IS NULL OR now() < t.time_end)",
+            nativeQuery = true)
+    List<TestExamInfoView> findAllAvailable();
 
-    @Query("SELECT t.id, t.title, t.timeStart, t.timeEnd FROM Test t WHERE t.discipline = ?1 AND " +
-            "t.timeStart < current_timestamp AND (t.timeEnd IS NULL OR current_timestamp < t.timeEnd)")
-    List<TestExamInfoDto> findAllAvailableByDiscipline(Discipline discipline);
-
-    @Query("SELECT t.id, t.title, t.timeStart, t.timeEnd FROM Test t WHERE " +
-            "t.timeStart < current_timestamp AND (t.timeEnd IS NULL OR current_timestamp < t.timeEnd)")
-    List<TestExamInfoDto> findAllAvailable();
+    @Modifying
+    @Query("UPDATE Test SET timeStart = :timeStart, timeEnd = :timeEnd " +
+            "WHERE id = :id AND creator = :creator " +
+            "AND (timeEnd IS NULL AND timeStart IS NULL) OR timeEnd < current_timestamp")
+    void saveDuration(Integer creator, Integer id, Timestamp timeStart, Timestamp timeEnd);
 
     @Modifying
     @Query(nativeQuery = true,
-            value = "UPDATE test SET time_start = :from, time_end = :to WHERE id = :id")
-    void saveDuration(Integer id, Timestamp from, Timestamp to);
+            value = "UPDATE test SET time_end = :timeEnd " +
+                    "WHERE id = :id AND creator = :creator " +
+                    "AND time_start IS NOT NULL AND time_end IS NULL")
+    void saveDurationTimeEnd(Integer creator, Integer id, Timestamp timeEnd);
 
-    @Modifying
-    @Query(nativeQuery = true,
-            value = "UPDATE test SET time_end = :timeEnd WHERE id = :id AND time_end IS NULL")
-    void saveDurationTimeEnd(Integer id, Timestamp timeEnd);
+    void deleteByCreatorAndId(Integer creator, Integer id);
+
+    Optional<Test> findByCreatorAndId(Integer creator, Integer id);
+
 }

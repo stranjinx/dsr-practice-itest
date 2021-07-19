@@ -3,6 +3,7 @@ package ru.dsr.itest.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,7 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(STATELESS)
                 .and().authorizeRequests()
                 .antMatchers(Api.V1 + "/edit/**").hasRole(Role.CREATOR.toString())
-                .antMatchers(Api.V1 + "/student/**").hasRole(Role.STUDENT.toString())
+                .antMatchers(HttpMethod.PUT,Api.V1 + "/student/**").hasRole(Role.STUDENT.toString())
+                .antMatchers(HttpMethod.GET, Api.V1 + "/student/**").authenticated()
                 .antMatchers(Api.V1 + "/exam/**").authenticated()
                 .antMatchers(Api.V1 + "/rating/**").authenticated()
                 .antMatchers(Api.V1 + "/auth/**").permitAll()

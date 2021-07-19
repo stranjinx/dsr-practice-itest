@@ -25,4 +25,12 @@ public class Test {
     private String title;
     private Timestamp timeStart;
     private Timestamp timeEnd;
+
+    public boolean canEdit(Integer creator) {
+        return this.creator.equals(creator);
+    }
+
+    public boolean isImmutable() {
+        return timeStart != null;
+    }
 }

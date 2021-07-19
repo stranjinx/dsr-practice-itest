@@ -31,4 +31,10 @@ public class StudentController {
     public Student getMainProfile(@AuthenticationPrincipal AccountDetails details) {
         return accountService.getStudentProfile(details.getId());
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(OK)
+    public Student getProfile(@PathVariable Integer id) {
+        return accountService.getStudentProfile(id);
+    }
 }

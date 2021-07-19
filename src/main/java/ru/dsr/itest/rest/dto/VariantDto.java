@@ -6,10 +6,7 @@ import ru.dsr.itest.db.entity.VariantConfig;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Getter
@@ -26,11 +23,11 @@ public class VariantDto {
     public static VariantDto from(Variant variant) {
         VariantDto dto = new VariantDto();
         dto.id = variant.getId();
-        dto.testId = variant.getTestId();
+        dto.testId = variant.getTest().getId();
         dto.number = variant.getNumber();
         dto.questions = variant.getConfigs()
                 .stream()
-                .collect(Collectors.toMap(VariantConfig::getNumber, c -> c.getConfigId().getQuestion()));
+                .collect(Collectors.toMap(VariantConfig::getNumber, c -> c.getId().getQuestion().getId()));
 
         return dto;
     }

@@ -5,9 +5,18 @@ databaseChangeLog:
   - changeSet:
       id: v1.0/create_tables_07072021-1643
       author: wiselder
-      comment: create functions
+      comment: create tables
       changes:
         - sqlFile:
             path: v1.0/create_tables_07072021-1643.sql
+            relativeToChangelogFile: true
+            splitStatements: false
+  - changeSet:
+      id: v1.0/create_rating_and_response_functions_16072021-1054
+      author: wiselder
+      comment: create functions
+      changes:
+        - sqlFile:
+            path: v1.0/create_rating_and_response_functions_16072021-1054.sql
             relativeToChangelogFile: true
             splitStatements: false

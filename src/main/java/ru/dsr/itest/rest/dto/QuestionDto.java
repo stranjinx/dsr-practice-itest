@@ -31,7 +31,7 @@ public class QuestionDto {
         QuestionDto s = new QuestionDto();
 
         s.id = quest.getId();
-        s.testId = quest.getTestId();
+        s.testId = quest.getTest().getId();
         s.title = quest.getTitle();
         s.weight = quest.getWeight();
         if (choices)

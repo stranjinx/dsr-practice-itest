@@ -1,13 +1,16 @@
 package ru.dsr.itest.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.dsr.itest.db.entity.Choice;
 import ru.dsr.itest.db.entity.Question;
+import ru.dsr.itest.db.entity.Test;
 import ru.dsr.itest.db.repository.ChoiceRepository;
 import ru.dsr.itest.db.repository.QuestionRepository;
+import ru.dsr.itest.db.repository.TestRepository;
 import ru.dsr.itest.rest.dto.ChoiceDto;
 import ru.dsr.itest.rest.dto.QuestionDto;
 import ru.dsr.itest.rest.response.QuestionView;
@@ -15,37 +18,41 @@ import ru.dsr.itest.rest.response.QuestionView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
     private final QuestionRepository questionRepository;
+    private final TestRepository testRepository;
     private final ChoiceRepository choiceRepository;
-    private final ActionValidator actionValidator;
 
     public Question getQuest(Integer creator, Integer id) {
-        actionValidator.validateGetQuestion(creator, id);
-        return questionRepository.findById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        return questionRepository.findByCreatorIdAndId(creator, id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
     }
 
     @Transactional
     public void deleteQuest(Integer creator, Integer id) {
-        actionValidator.validateDeleteQuestion(creator, id);
-        questionRepository.deleteById(id);
+        questionRepository.deleteByCreatorIdAndId(creator, id);
     }
 
     public List<QuestionView> findAll(Integer creator, Integer test) {
-        actionValidator.validateGetTest(creator, test);
-        return questionRepository.findAllByTestId(test);
+        return questionRepository.findAllByCreatorIdAndTestId(creator, test);
     }
 
     @Transactional
     public void updateQuestionSettings(Integer creator, QuestionDto settings) {
-        actionValidator.validateUpdateTest(creator, settings.getTestId());
+        Test test = testRepository.findById(settings.getTestId())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        if (!test.canEdit(creator))
+            throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
+        if (test.isImmutable())
+            throw new ResponseStatusException(FORBIDDEN, "IMMUTABLE");
 
         Question question = settings.getId() == -1 ?
                 new Question() :
@@ -53,19 +60,19 @@ public class QuestionService {
                         .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
 
         question.setTitle(settings.getTitle());
-        question.setTestId(settings.getTestId());
+        question.setTest(test);
         question.setWeight(settings.getWeight());
 
         questionRepository.save(question);
 
         updateChoices(
-                question.getId(),
+                question,
                 question.getChoices().stream().collect(Collectors.toMap(Choice::getId, c -> c)),
                 settings.getChoices()
         );
     }
 
-    private void updateChoices(Integer questionId,
+    private void updateChoices(Question question,
                                Map<Integer, Choice> currentChoicesById,
                                Map<Integer, ChoiceDto> choiceDtoByNumber) {
         List<Choice> updated = new ArrayList<>();
@@ -83,7 +90,7 @@ public class QuestionService {
             else if ((choice = currentChoicesById.remove(choiceId)) == null)
                 throw new ResponseStatusException(NOT_FOUND);
 
-            choice.setQuestionId(questionId);
+            choice.setQuestion(question);
             choice.setNumber(o.getKey());
             choice.setCorrect(choiceSettings.isCorrect());
             choice.setTitle(choiceSettings.getTitle());

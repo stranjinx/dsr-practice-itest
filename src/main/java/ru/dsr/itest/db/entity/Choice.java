@@ -12,7 +12,8 @@ public class Choice {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
-    private Integer questionId;
+    @ManyToOne
+    private Question question;
     private Integer number;
     private String title;
     private Boolean correct;

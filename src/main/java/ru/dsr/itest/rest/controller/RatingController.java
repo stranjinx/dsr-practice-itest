@@ -20,7 +20,8 @@ public class RatingController {
 
     @GetMapping("/{test}")
     @ResponseStatus(HttpStatus.OK)
-    public List<RatingView> findRating(@PathVariable Integer test) {
-        return service.findRating(test);
+    public List<RatingView> findRating(@AuthenticationPrincipal AccountDetails details,
+                                       @PathVariable Integer test) {
+        return service.findRating(details.getId(), test);
     }
 }

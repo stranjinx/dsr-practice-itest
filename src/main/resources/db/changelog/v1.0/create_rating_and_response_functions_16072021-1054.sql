@@ -13,7 +13,7 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    SELECT r.* INTO target_response FROM response r WHERE respondent_id = respondentId AND test_id = testId LIMIT 1;
+    SELECT r.* INTO target_response FROM response r WHERE r.respondent_id = respondentId AND r.test_id = testId;
     IF target_response IS NULL THEN
         INSERT INTO response (respondent_id, test_id, variant_id, time_end)
         SELECT respondentId, testId, v.id, target_test.time_end FROM variant v
@@ -26,7 +26,7 @@ END
 
 $$;
 
-create or replace function get_rating(testid integer)
+create or replace function get_rating(creatorid integer, testid integer)
     returns TABLE(
         respondent_id integer,
         f_name varchar,
@@ -45,6 +45,9 @@ DECLARE variant_question RECORD;
     DECLARE correct_count INTEGER;
     DECLARE selected_correct_count INTEGER;
 BEGIN
+    IF (SELECT t FROM test t WHERE t.id = testid AND t.creator = creatorid) IS NULL THEN
+        RETURN;
+    END IF;
     FOR target_response IN
         SELECT * FROM response WHERE test_id = testId
         LOOP

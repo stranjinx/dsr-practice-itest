@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.dsr.itest.db.entity.*;
 import ru.dsr.itest.db.repository.QuestionRepository;
-import ru.dsr.itest.db.repository.TestRepository;
 import ru.dsr.itest.db.repository.VariantConfigRepository;
 import ru.dsr.itest.db.repository.VariantRepository;
 import ru.dsr.itest.rest.dto.VariantDto;
@@ -19,7 +18,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class VariantService {
     private final VariantRepository variantRepository;
-    private final TestRepository testRepository;
+    private final TestService testService;
     private final VariantConfigRepository variantConfigRepository;
     private final QuestionRepository questionRepository;
 
@@ -30,10 +29,7 @@ public class VariantService {
 
     @Transactional
     public void updateVariantSettings(Integer creator, VariantDto settings) {
-        Test test = testRepository.findById(settings.getTestId())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
-        if (!test.canEdit(creator))
-            throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
+        Test test = testService.findTest(creator, settings.getTestId());
         if (test.isImmutable())
             throw new ResponseStatusException(FORBIDDEN, "IMMUTABLE");
 
@@ -59,13 +55,13 @@ public class VariantService {
         Set<Integer> uniqueQuestions = new HashSet<>(oldQuestions.size());
         for (Integer id : oldQuestions) {
             if (!uniqueQuestions.add(id))
-                throw new ResponseStatusException(BAD_REQUEST);
+                throw new ResponseStatusException(BAD_REQUEST, "SIMILAR QUESTS");
         }
-        if (!questionRepository.existsAllByTestId(
+        int count = questionRepository.countOfExists(
                 settings.getTestId(),
-                uniqueQuestions,
-                uniqueQuestions.size()))
-            throw new ResponseStatusException(BAD_REQUEST);
+                uniqueQuestions);
+        if (count == uniqueQuestions.size())
+            throw new ResponseStatusException(BAD_REQUEST, "QUEST NOT FOUND");
     }
 
     private void updateVariantQuestions(Variant variant, Map<Integer, Integer> questionsByNumber) {

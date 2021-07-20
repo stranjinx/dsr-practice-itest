@@ -28,7 +28,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 @RequiredArgsConstructor
 public class QuestionService {
     private final QuestionRepository questionRepository;
-    private final TestRepository testRepository;
+    private final TestService testService;
     private final ChoiceRepository choiceRepository;
 
     public Question getQuest(Integer creator, Integer id) {
@@ -47,10 +47,7 @@ public class QuestionService {
 
     @Transactional
     public void updateQuestionSettings(Integer creator, QuestionDto settings) {
-        Test test = testRepository.findById(settings.getTestId())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
-        if (!test.canEdit(creator))
-            throw new ResponseStatusException(FORBIDDEN, "NOT PERMS");
+        Test test = testService.findTest(creator, settings.getTestId());
         if (test.isImmutable())
             throw new ResponseStatusException(FORBIDDEN, "IMMUTABLE");
 

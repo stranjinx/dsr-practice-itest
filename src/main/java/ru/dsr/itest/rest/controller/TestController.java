@@ -8,6 +8,7 @@ import ru.dsr.itest.rest.Api;
 import ru.dsr.itest.rest.dto.TestCreateDto;
 import ru.dsr.itest.rest.dto.TestEditDto;
 import ru.dsr.itest.rest.dto.TestDurationDto;
+import ru.dsr.itest.rest.response.TestFullView;
 import ru.dsr.itest.rest.response.TestView;
 import ru.dsr.itest.security.details.AccountDetails;
 import ru.dsr.itest.service.TestService;
@@ -26,9 +27,9 @@ public class TestController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public Test create(@AuthenticationPrincipal AccountDetails details,
-                       @RequestBody @Valid TestCreateDto testData) {
-        return testService.createTest(details.getId(), testData);
+    public TestFullView create(@AuthenticationPrincipal AccountDetails details,
+                               @RequestBody @Valid TestCreateDto testData) {
+        return TestFullView.from(testService.createTest(details.getId(), testData));
     }
 
     @PutMapping("/{id}")
@@ -56,9 +57,9 @@ public class TestController {
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
-    public Test get(@AuthenticationPrincipal AccountDetails details,
+    public TestFullView get(@AuthenticationPrincipal AccountDetails details,
                     @PathVariable Integer id) {
-        return testService.findTest(details.getId(), id);
+        return TestFullView.from(testService.findTest(details.getId(), id));
     }
 
     @GetMapping("/all")

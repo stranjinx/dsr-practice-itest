@@ -20,8 +20,8 @@ public interface QuestionRepository extends CrudRepository<Question, Integer> {
     List<QuestionView> findAllByCreatorIdAndTestId(Integer creator, Integer test);
 
     @Query(nativeQuery = true,
-            value = "SELECT COUNT(q.*) = :size FROM question q, test t WHERE q.id in :values AND q.test_id = :testId" )
-    boolean existsAllByTestId(Integer testId, Collection<Integer> values, Integer size);
+            value = "SELECT COUNT(q.*) FROM question q, test t WHERE q.id in :values AND q.test_id = :testId GROUP BY q.id" )
+    int countOfExists(Integer testId, Collection<Integer> values);
 
     @Query(nativeQuery = true, value =
             "SELECT * FROM question q, test t WHERE q.id = :id AND q.test_id = t.id AND t.creator = :creator")

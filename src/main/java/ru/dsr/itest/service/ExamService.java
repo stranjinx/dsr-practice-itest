@@ -45,18 +45,19 @@ public class ExamService {
         List<Answer> toSave = new ArrayList<>();
         for (VariantConfig config : response.getVariant().getConfigs()) {
             Question q = config.getId().getQuestion();
-            long correctCount = q.getChoices().stream().filter(Choice::getCorrect).count();
+            boolean isOneAnswer = q.getChoices().stream().filter(Choice::getCorrect).count() == 1;
+            int selected = 0;
             for (Choice choice : q.getChoices()) {
                 Answer a = new Answer();
                 a.setId(new Answer.Id(response.getId(), choice.getId()));
                 if (answers.getChoiceIdList().contains(choice.getId())) {
-                    --correctCount;
+                    ++selected;
                     toSave.add(a);
                 } else {
                     toDelete.add(a);
                 }
             }
-            if (correctCount < 0) {
+            if (isOneAnswer && selected > 1) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
         }

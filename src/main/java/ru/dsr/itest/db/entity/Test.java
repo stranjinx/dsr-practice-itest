@@ -25,6 +25,8 @@ public class Test {
     private String title;
     private Timestamp timeStart;
     private Timestamp timeEnd;
+    @OneToMany(mappedBy = "test")
+    private List<Variant> variants = new ArrayList<>();
 
     public boolean canEdit(Integer creator) {
         return this.creator.equals(creator);

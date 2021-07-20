@@ -47,12 +47,18 @@ public class TestService {
 
     @Transactional
     public void start(Integer creator, Integer id, TestDurationDto duration) {
-        testRepository.saveDuration(creator, id, duration.getTimeStart(), duration.getTimeEnd());
+        Test test = findTest(creator, id);
+        if (test.getVariants().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT FOUND VARIANT");
+        }
+        test.setTimeStart(duration.getTimeStart());
+        test.setTimeEnd(duration.getTimeEnd());
+        testRepository.save(test);
     }
 
     @Transactional
     public void stop(Integer creator, Integer id) {
-        testRepository.saveDurationTimeEnd(creator, id, Timestamp.from(Instant.now()));
+        testRepository.stopTest(creator, id);
     }
 
     public void deleteTest(Integer creator, Integer id) {
